@@ -15,6 +15,12 @@ app.get('/tasks', async (req, res) => {
     res.status(200).send(tasks)
 });
 
+app.get('/tasks/:id', async (req, res) => {
+    const taskId = req.params.id;
+    const task = await TaskModel.findById(taskId);
+
+    res.status(200).send(task)
+})
 app.post('/tasks', async (req, res) => {
     const newTask = new TaskModel(req.body);
     await newTask.save();
