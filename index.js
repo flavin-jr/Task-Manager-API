@@ -1,6 +1,5 @@
 const express = require('express');
 const dotenv = require("dotenv");
-const TaskModel = require('./src/models/task.model');
 const TaskRouter = require('./src/routes/task.routes');
 const connectToDatabase = require("./src/database/mongoose.database");
 
