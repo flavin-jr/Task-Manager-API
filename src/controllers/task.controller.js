@@ -1,6 +1,7 @@
 const TaskModel = require('../models/task.model');
-
-
+const NotFoundError = require('../errors/mongodb.error')
+const { notAllowedFieldsToUpdate, objectIdCastError } = require('../errors/general.error');
+const { default: mongoose } = require('mongoose');
 class TaskController {
     constructor(req, res) {
         this.req = req;
@@ -24,11 +25,14 @@ class TaskController {
 
             const task = await TaskModel.findById(taskId);
             if (!task) {
-                return this.res.status(404).send('task nao encontrada');
+                return NotFoundError(this.res);
             }
             return this.res.status(200).send(task);
         }
         catch (error) {
+            if (error instanceof mongoose.Error.CastError) {
+                return objectIdCastError(this.res);
+            }
             return this.res.status(500).send(error.message)
         }
     }
@@ -48,7 +52,12 @@ class TaskController {
 
             const taskId = this.req.params.id;
             const taskData = this.req.body;
-            const taskToUpdate = await TaskModel.findById(taskId)
+            const taskToUpdate = await TaskModel.findById(taskId);
+
+            if (!taskToUpdate) {
+                return NotFoundError(this.res);
+            }
+
             const allowedUpdate = ['isCompleted'];
             const requestedUpdates = Object.keys(this.req.body);
 
@@ -57,7 +66,7 @@ class TaskController {
                     taskToUpdate[update] = taskData[update]
                 }
                 else {
-                    return this.res.status(500).send('Um ou mais campos inseridos nao sao editaveis')
+                    return notAllowedFieldsToUpdate(this.res);
                 }
             }
 
